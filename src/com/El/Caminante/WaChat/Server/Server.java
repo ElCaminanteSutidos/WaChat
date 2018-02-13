@@ -15,13 +15,16 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
-public class Server implements ActionListener {
+import com.El.Caminante.WaChat.Server.GUI.ServerWindow;
+
+public class Server {
 
 	ServerSocket server;
 	boolean running = false;
 	ArrayList<ServerClient> clients;
 	SystemTray tray;
 	TrayIcon icon;
+	ServerWindow serverWindow;
 
 	public static void main(String[] args) {
 		int port = 200;
@@ -37,6 +40,7 @@ public class Server implements ActionListener {
 	}
 
 	public Server(int port) {
+		serverWindow = new ServerWindow(this);
 		clients = new ArrayList<ServerClient>();
 		System.out.println("WaChat Server port=" + port + "!");
 		try {
@@ -63,10 +67,42 @@ public class Server implements ActionListener {
 
 			// Create a pop-up menu components
 			MenuItem exitItem = new MenuItem("Exit");
-			exitItem.addActionListener(this);
+			exitItem.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					// TODO Auto-generated method stub
+					stop();
+				}
+				
+			});
+			MenuItem showWindowItem = new MenuItem("Show Window");
+			showWindowItem.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					// TODO Auto-generated method stub
+					serverWindow.setVisible(true);
+				}
+				
+			});
+			
+			MenuItem hideWindowItem = new MenuItem("Hide Window");
+			hideWindowItem.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					// TODO Auto-generated method stub
+					serverWindow.setVisible(false);
+				}
+				
+			});
 
 			// Add components to pop-up menu
 			popup.add(exitItem);
+			popup.addSeparator();
+			popup.add(showWindowItem);
+			popup.add(hideWindowItem);
 
 			icon.setPopupMenu(popup);
 
@@ -95,9 +131,7 @@ public class Server implements ActionListener {
 	}
 
 	public void SendMSGToAll(String msg) {
-		for (int i = 0; i < clients.size(); i++) {
-			clients.get(i).send("/msg/" + msg);
-		}
+		SendMSGToAllExcept(msg, null);
 	}
 
 	public void SendMSGToAllExcept(String msg, ServerClient exception) {
@@ -106,16 +140,26 @@ public class Server implements ActionListener {
 				continue;
 			clients.get(i).send("/msg/" + msg);
 		}
+		serverWindow.println(msg);
 	}
-
-	public void actionPerformed(ActionEvent arg0) {
-		// TODO Auto-generated method stub
+	
+	public void stop() {
 		running = false;
 		for (int i = 0; i < clients.size(); i++) {
 			clients.get(i).terminate(false);
 		}
 		clients.clear();
 		tray.remove(icon);
+		serverWindow.dispose();
+	}
+	
+	public void handleCMD(String cmd) {
+		switch(cmd) {
+		case "/stop":
+			stop();
+		default:
+			SendMSGToAll("<SERVER> "+cmd);	
+		}
 	}
 
 }

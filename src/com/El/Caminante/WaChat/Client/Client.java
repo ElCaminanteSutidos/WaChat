@@ -88,26 +88,31 @@ public class Client implements Runnable{
 	
 	public void run() {
 		while(running) {
+			String line = null;
 			try {
-				String line = input.readLine();
-				if(line.startsWith("/msg/")) {
-					chat.println(line.split("/msg/")[1]);
-					if(chat.isFocusOwner() == false) {
-						chat.requestFocus();
-						chat.txtChattext.requestFocus();
-					}
-				}else if(line.equals("/end/")) {
-					running = false;
-					chat.dispose();
-					output.close();
+				line = input.readLine();
+			} catch (IOException e) {
+				continue;
+			}
+			if(line.startsWith("/msg/")) {
+				chat.println(line.substring(5));
+				if(chat.isFocusOwner() == false) {
+					chat.requestFocus();
+					chat.txtChattext.requestFocus();
+				}
+			}else if(line.equals("/end/")) {
+				JOptionPane.showMessageDialog(null,
+					    "The Server Has Been Closed.",
+					    "Server Terminated",
+					    JOptionPane.ERROR_MESSAGE);
+				running = false;
+				chat.dispose();
+				output.close();
+				try {
 					input.close();
 					server.close();
-					JOptionPane.showMessageDialog(null,
-						    "The Server Has Been Closed.",
-						    "Server Terminated",
-						    JOptionPane.ERROR_MESSAGE);
+				}catch(Exception e) {
 				}
-			} catch (IOException e) {
 			}
 		}
 	}

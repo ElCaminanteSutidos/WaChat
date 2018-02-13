@@ -1,4 +1,4 @@
-package com.El.Caminante.WaChat.Client.GUI;
+package com.El.Caminante.WaChat.Server.GUI;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -17,17 +17,15 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 
-import com.El.Caminante.WaChat.Client.Client;
+import com.El.Caminante.WaChat.Server.Server;
 
-public class Chat extends JFrame {
+public class ServerWindow extends JFrame {
 
 	private JPanel contentPane;
 	public JTextField txtChattext;
 	private JScrollPane scrollPane;
 	private JTextArea txtrChatarea;
-	Client client;
-	private JScrollPane scrollPane_1;
-	private JTextArea txtrOnlinelist;
+	Server server;
 
 	/**
 	 * Launch the application.
@@ -48,40 +46,28 @@ public class Chat extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public Chat(Client client) {
-		this.client = client;
-		setTitle("WaChat");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 420, 313);
+	public ServerWindow(Server server) {
+		this.server = server;
+		setTitle("WaChat Server");
+		setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		setBounds(100, 100, 403, 312);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		GridBagLayout gbl_contentPane = new GridBagLayout();
-		gbl_contentPane.columnWidths = new int[] {121, 238, 0};
-		gbl_contentPane.rowHeights = new int[] { 166, 0, 0 };
-		gbl_contentPane.columnWeights = new double[] { 1.0, 0.0, 0.0 };
+		gbl_contentPane.columnWidths = new int[] { 0, 0 };
+		gbl_contentPane.rowHeights = new int[] { 0, 0, 0 };
+		gbl_contentPane.columnWeights = new double[] { 1.0, 0.0 };
 		gbl_contentPane.rowWeights = new double[] { 1.0, 0.0, Double.MIN_VALUE };
 		contentPane.setLayout(gbl_contentPane);
-		
-		scrollPane_1 = new JScrollPane();
-		GridBagConstraints gbc_scrollPane_1 = new GridBagConstraints();
-		gbc_scrollPane_1.insets = new Insets(0, 0, 5, 5);
-		gbc_scrollPane_1.fill = GridBagConstraints.BOTH;
-		gbc_scrollPane_1.gridx = 0;
-		gbc_scrollPane_1.gridy = 0;
-		contentPane.add(scrollPane_1, gbc_scrollPane_1);
-		
-		txtrOnlinelist = new JTextArea();
-		txtrOnlinelist.setEditable(false);
-		scrollPane_1.setViewportView(txtrOnlinelist);
 
 		scrollPane = new JScrollPane();
 		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
 		gbc_scrollPane.gridwidth = 2;
-		gbc_scrollPane.insets = new Insets(0, 0, 5, 0);
+		gbc_scrollPane.insets = new Insets(0, 0, 5, 5);
 		gbc_scrollPane.fill = GridBagConstraints.BOTH;
-		gbc_scrollPane.gridx = 1;
+		gbc_scrollPane.gridx = 0;
 		gbc_scrollPane.gridy = 0;
 		contentPane.add(scrollPane, gbc_scrollPane);
 
@@ -96,13 +82,12 @@ public class Chat extends JFrame {
 			@Override
 			public void keyPressed(KeyEvent arg0) {
 				if (arg0.getKeyCode() == KeyEvent.VK_ENTER) {
-					client.SendChatMSG(txtChattext.getText());
+					server.handleCMD(txtChattext.getText());
 					txtChattext.setText("");
 				}
 			}
 		});
 		GridBagConstraints gbc_txtChattext = new GridBagConstraints();
-		gbc_txtChattext.gridwidth = 2;
 		gbc_txtChattext.insets = new Insets(0, 0, 0, 5);
 		gbc_txtChattext.fill = GridBagConstraints.HORIZONTAL;
 		gbc_txtChattext.gridx = 0;
@@ -113,12 +98,12 @@ public class Chat extends JFrame {
 		JButton btnSend = new JButton("Send");
 		btnSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				client.SendChatMSG(txtChattext.getText());
+				server.handleCMD(txtChattext.getText());
 				txtChattext.setText("");
 			}
 		});
 		GridBagConstraints gbc_btnSend = new GridBagConstraints();
-		gbc_btnSend.gridx = 2;
+		gbc_btnSend.gridx = 1;
 		gbc_btnSend.gridy = 1;
 		contentPane.add(btnSend, gbc_btnSend);
 	}
@@ -126,15 +111,6 @@ public class Chat extends JFrame {
 	public void println(String line) {
 		txtrChatarea.append(line + "\n");
 		txtrChatarea.moveCaretPosition(txtrChatarea.getText().length());
-	}
-	
-	public void updateOnlineList(String online) {
-		String userText = "Online Users:";
-		String[] users = online.split("/");
-		for(int i = 0; i < users.length; i++) {
-			userText += "\n"+users[i];
-		}
-		txtrOnlinelist
 	}
 
 }
