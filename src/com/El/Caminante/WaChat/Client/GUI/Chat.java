@@ -72,6 +72,7 @@ public class Chat extends JFrame {
 		contentPane.add(scrollPane, gbc_scrollPane);
 
 		txtrChatarea = new JTextArea();
+		txtrChatarea.setWrapStyleWord(true);
 		txtrChatarea.setEditable(false);
 		txtrChatarea.setLineWrap(true);
 		scrollPane.setViewportView(txtrChatarea);
