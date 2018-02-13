@@ -34,6 +34,9 @@ public class Client {
 				try {
 					line = input.readLine();
 					System.out.println(line);
+					if(line.equals("stop")) {
+						running = false;
+					}
 				} catch (IOException e) {
 				}
 			}

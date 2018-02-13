@@ -13,6 +13,7 @@ public class Server {
 		System.out.println("WaChat Server port=" + port + "!");
 		try {
 			server = new ServerSocket(port);
+			server.setSoTimeout(5000);
 			running = true;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
