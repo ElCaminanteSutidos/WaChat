@@ -1,47 +1,122 @@
 package com.El.Caminante.WaChat.Client;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Scanner;
 
-public class Client {
+import javax.swing.JOptionPane;
+
+import com.El.Caminante.WaChat.Client.GUI.Chat;
+import com.El.Caminante.WaChat.Client.GUI.Login;
+
+public class Client implements Runnable{
 	
 	Socket server;
 	BufferedReader input;
 	PrintWriter output;
-	boolean running = true;
+	boolean running = false;
+	Login loginDialog;
+	Chat chat;
 	
-	public Client() {
-		Scanner inputCMD = new Scanner(System.in);
+	public static void main(String[] args) {
+		int port = 200;
 		try {
-			server = new Socket("localhost", 200);
+			if (args.length > 0)
+				port = Integer.parseInt(args[0]);
+		} catch (Exception e) {
+		}
+		new Client(port);
+	}
+	
+	public Client(int port) {
+		
+		loginDialog = new Login(this);
+		loginDialog.txtPort.setText(""+port);
+		loginDialog.setVisible(true);
+		
+	}
+	
+	public boolean Login(String ip, int port) {
+		
+		try {
+			server = new Socket(ip, port);
 			input = new BufferedReader(new InputStreamReader(server.getInputStream()));
 			output = new PrintWriter(server.getOutputStream());
+			server.setSoTimeout(1000);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			System.err.println("Failed to connect to server");
-			running = false;
+			return false;
 		}
 		
+		return true;
+		
+	}
+	
+	public void start() {
+		running = true;
+		loginDialog.dispose();
+		chat = new Chat(this);
+		chat.setVisible(true);
+		chat.addWindowListener(new WindowAdapter() {
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+        		output.println("/end/");
+        		output.flush();
+        		running = false;
+        		chat.dispose();
+        		output.close();
+        		try {
+        			input.close();
+        			server.close();
+        		} catch (IOException ex) {
+        			// TODO Auto-generated catch block
+        			ex.printStackTrace();
+        		}
+            }
+
+        });
+		chat.txtChattext.requestFocus();
+		output.println("/Username/"+loginDialog.txtUsername.getText());
+		output.flush();
+		new Thread(this, "Client Recieve Thread").start();
+	}
+	
+	public void run() {
 		while(running) {
-			String line = inputCMD.nextLine();
-			if(line != null) {
-				output.println(line);
-				output.flush();
-				try {
-					line = input.readLine();
-					System.out.println(line);
-					if(line.equals("stop")) {
-						running = false;
+			try {
+				String line = input.readLine();
+				if(line.startsWith("/msg/")) {
+					chat.println(line.split("/msg/")[1]);
+					if(chat.isFocusOwner() == false) {
+						chat.requestFocus();
+						chat.txtChattext.requestFocus();
 					}
-				} catch (IOException e) {
+				}else if(line.equals("/end/")) {
+					running = false;
+					chat.dispose();
+					output.close();
+					input.close();
+					server.close();
+					JOptionPane.showMessageDialog(null,
+						    "The Server Has Been Closed.",
+						    "Server Terminated",
+						    JOptionPane.ERROR_MESSAGE);
 				}
+			} catch (IOException e) {
 			}
 		}
-		
+	}
+	
+	public void SendChatMSG(String msg) {
+		if(msg == null || msg.equals(""))
+			return;
+		output.println("/msg/"+msg);
+		output.flush();
 	}
 
 }

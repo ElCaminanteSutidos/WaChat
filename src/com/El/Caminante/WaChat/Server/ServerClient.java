@@ -7,13 +7,14 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 public class ServerClient implements Runnable {
-	
+
 	Server server;
 	Socket client;
 	BufferedReader input;
 	PrintWriter output;
-	
-	
+	boolean running = true;
+	String username = "Unknown";
+
 	public ServerClient(Socket client, Server server) {
 		this.client = client;
 		this.server = server;
@@ -27,20 +28,42 @@ public class ServerClient implements Runnable {
 	}
 
 	public void run() {
-		while(server.running) {
+		while (server.running) {
 			String line;
 			try {
-				if((line = input.readLine()) != null) {
-					System.out.println(line);
-					output.println(line);
-					output.flush();
-					if(line.equals("stop")) {
-						server.running = false;
+				if ((line = input.readLine()) != null) {
+					if (line.startsWith("/msg/")) {
+						server.SendMSGToAll("<" + username + "> " + line.split("/msg/")[1]);
+					} else if (line.equals("/end/")) {
+						terminate(true);
+						server.SendMSGToAll(username + " has Disconnected.");
+					} else if (line.contains("/Username/")) {
+						username = line.split("/Username/")[1];
+						server.SendMSGToAllExcept(username + " has Connected.", this);
 					}
 				}
 			} catch (IOException e) {
 			}
-			
+
+		}
+	}
+
+	public void send(String msg) {
+		output.println(msg);
+		output.flush();
+	}
+
+	public void terminate(boolean removeFromList) {
+		if (removeFromList)
+			server.clients.remove(this);
+		running = false;
+		output.println("/end/");
+		output.flush();
+		output.close();
+		try {
+			input.close();
+			client.close();
+		} catch (IOException e) {
 		}
 	}
 
