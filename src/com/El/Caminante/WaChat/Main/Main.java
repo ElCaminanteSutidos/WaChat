@@ -1,22 +1,29 @@
 package com.El.Caminante.WaChat.Main;
 
+import com.El.Caminante.WaChat.Client.Client;
+import com.El.Caminante.WaChat.Server.Server;
+
 public class Main {
 
 	public static void main(String[] args) {
 		boolean isServer = false;
-		if (args.length > 0) {
-			isServer = args[0].toLowerCase().equals("-server");
+		int port = 200;
+		for(int i = 0; i < args.length; i++) {
+			switch(args[i].toLowerCase()) {
+			case "-server":
+				isServer = true;
+				break;
+			case "-port":
+				if(args.length > i)
+					port = Integer.parseInt(args[i+1]);
+				break;
+			}
 		}
-		new Main(isServer);
-	}
-
-	public Main(boolean isServer) {
 		if (isServer) {
-			System.out.println("WaChat Server!");
+			new Server(port);
 		} else {
-			System.out.println("WaChat Client!");
+			new Client();
 		}
-
 	}
 
 }
