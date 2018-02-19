@@ -259,7 +259,7 @@ public class Server {
 	}
 
 	/**
-	 * kicks a client from the server
+	 * kicks a certain client from the server
 	 * 
 	 * @param clientName
 	 *            the client to be kicked
