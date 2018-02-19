@@ -129,18 +129,33 @@ public class Server {
 
 		}
 	}
+	
+	public void updateUserList() {
+		String userList = "/users";
+		for (int i = 0; i < clients.size(); i++) {
+			userList += "/"+clients.get(i).username;
+		}
+		SendToAll(userList);
+	}
 
 	public void SendMSGToAll(String msg) {
 		SendMSGToAllExcept(msg, null);
 	}
-
-	public void SendMSGToAllExcept(String msg, ServerClient exception) {
+	
+	public void SendToAll(String msg) {
+		SendToAllExcept(msg, null);
+	}
+	
+	public void SendToAllExcept(String msg, ServerClient exception) {
 		for (int i = 0; i < clients.size(); i++) {
 			if (clients.get(i) == exception)
 				continue;
-			clients.get(i).send("/msg/" + msg);
+			clients.get(i).send(msg);
 		}
-		serverWindow.println(msg);
+	}
+
+	public void SendMSGToAllExcept(String msg, ServerClient exception) {
+		SendToAllExcept("/msg/" + msg, exception);
 	}
 	
 	public void stop() {

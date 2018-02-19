@@ -113,6 +113,11 @@ public class Client implements Runnable{
 					server.close();
 				}catch(Exception e) {
 				}
+			}else if(line.startsWith("/users/")) {
+				chat.updateOnlineList(line.substring(7));
+			}else if(line.equals("/ping/")) {
+				output.println("/pong/");
+				output.flush();
 			}
 		}
 	}

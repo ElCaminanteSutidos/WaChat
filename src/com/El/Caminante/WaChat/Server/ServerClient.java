@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 
 public class ServerClient implements Runnable {
 
@@ -14,10 +15,20 @@ public class ServerClient implements Runnable {
 	PrintWriter output;
 	boolean running = true;
 	String username = "Unknown";
+	public static int TIMEOUT = 5000;
+	public static int TIMEOUT_ATTEMPTS = 5;
+	boolean responded = true;
+	int failedAttempts = 0;
 
 	public ServerClient(Socket client, Server server) {
 		this.client = client;
 		this.server = server;
+		try {
+			client.setSoTimeout(5000);
+		} catch (SocketException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		try {
 			input = new BufferedReader(new InputStreamReader(client.getInputStream()));
 			output = new PrintWriter(client.getOutputStream());
@@ -28,7 +39,7 @@ public class ServerClient implements Runnable {
 	}
 
 	public void run() {
-		while (server.running) {
+		while (running) {
 			String line;
 			try {
 				if ((line = input.readLine()) != null) {
@@ -40,9 +51,24 @@ public class ServerClient implements Runnable {
 					} else if (line.contains("/Username/")) {
 						username = line.split("/Username/")[1];
 						server.SendMSGToAllExcept(username + " has Connected.", this);
+						server.updateUserList();
+					} else if(line.equals("/pong/")) {
+						responded = true;
 					}
 				}
-			} catch (IOException e) {
+			}catch (IOException e) {
+				if(responded == false) {
+					failedAttempts++;
+					if(failedAttempts >= TIMEOUT_ATTEMPTS) {
+						terminate(true);
+						server.SendMSGToAll(username + " has Timed Out.");
+					}
+				}else {
+					failedAttempts = 0;
+					responded = false;
+					output.println("/ping/");
+					output.flush();
+				}
 			}
 
 		}
@@ -65,6 +91,7 @@ public class ServerClient implements Runnable {
 			client.close();
 		} catch (IOException e) {
 		}
+		server.updateUserList();
 	}
 
 }
