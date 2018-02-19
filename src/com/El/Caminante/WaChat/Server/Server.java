@@ -248,11 +248,29 @@ public class Server {
 	 *            the command to be handled
 	 */
 	public void handleCMD(String cmd) {
-		switch (cmd) {
-		case "/stop":
+		if (cmd.equals("/stop")) {
 			stop();
-		default:
+		} else if (cmd.startsWith("/kick")) {
+			String clientName = cmd.split(" ")[1];
+			kick(clientName);
+		} else {
 			SendMSGToAll("<SERVER> " + cmd);
+		}
+	}
+
+	/**
+	 * kicks a client from the server
+	 * 
+	 * @param clientName
+	 *            the client to be kicked
+	 */
+	public void kick(String clientName) {
+		for (int i = 0; i < clients.size(); i++) {
+			if (clients.get(i).username.equals(clientName)) {
+				SendMSGToAll(clientName + " has been kicked");
+				clients.get(i).terminate(true);
+				break;
+			}
 		}
 	}
 
