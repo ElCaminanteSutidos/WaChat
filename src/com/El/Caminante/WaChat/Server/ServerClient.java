@@ -18,11 +18,11 @@ public class ServerClient implements Runnable {
 	 */
 	private Socket client;
 	/**
-	 * the input stream for the client
+	 * the input stream for the client socket
 	 */
 	private BufferedReader input;
 	/**
-	 * the output stream for the client
+	 * the output stream for the client socket
 	 */
 	private PrintWriter output;
 	/**
